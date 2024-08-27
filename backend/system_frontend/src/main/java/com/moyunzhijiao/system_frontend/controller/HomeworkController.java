@@ -40,7 +40,7 @@ public class HomeworkController {
     @Operation(summary = "教师的查询作业列表，四个分页查询")
     @GetMapping("/ciep/homework")
     public Result findHomeworkPageOfTeacher(@RequestHeader("authorization") String token
-            , @RequestParam Integer type, @RequestParam Integer currentPage, @RequestParam Integer pageSize
+            , @RequestParam("") Integer type, @RequestParam Integer currentPage, @RequestParam Integer pageSize
             ,@RequestParam(defaultValue = "")String name){
         DecodedJWT jwt = JWT.decode(token);
         // 从载荷中获取用户 ID

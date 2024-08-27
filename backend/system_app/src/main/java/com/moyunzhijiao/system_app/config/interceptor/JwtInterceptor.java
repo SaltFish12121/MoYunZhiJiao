@@ -6,11 +6,10 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import com.moyunzhijiao.system_app.common.Constants;
 import com.moyunzhijiao.system_app.entity.Student;
 import com.moyunzhijiao.system_app.exception.ServiceException;
-import com.moyunzhijiao.system_app.service.StudentService;
+import com.moyunzhijiao.system_app.service.LoginService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +23,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 @Component
 public class JwtInterceptor implements HandlerInterceptor {
     @Autowired
-    private StudentService studentService;
+    private LoginService studentService;
 
     @Override
     public boolean preHandle(HttpServletRequest request , HttpServletResponse response,Object handler) throws Exception{
