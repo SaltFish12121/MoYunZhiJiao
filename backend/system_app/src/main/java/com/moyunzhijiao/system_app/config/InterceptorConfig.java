@@ -18,7 +18,9 @@ public class InterceptorConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**")     //拦截所有请求，通过判断token是否合法来决定是否登录
                 .excludePathPatterns("/LoginService/login","/api/frontend/student/login",
                         "/doc.html", "/**/import", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-resources/**",
-                        "/webjars/**", "/swagger-ui/**","/upload/**"); // 放行Knife4j等相关路径
+                        "/webjars/**", "/swagger-ui/**","/upload/**",
+                        "/LoginService/forgetPassword","/LoginService/getPhoneVerify","/LoginService/register",
+                        "/InformationService/getCommonProblem"); // 放行Knife4j等相关路径
 
     }
 
