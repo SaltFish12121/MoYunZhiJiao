@@ -1,18 +1,30 @@
 package com.moyunzhijiao.system_app.service;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.moyunzhijiao.system_app.controller.dto.*;
+import com.moyunzhijiao.system_app.controller.dto.fonted.KnowledgeInfo;
+import com.moyunzhijiao.system_app.controller.dto.fonted.MessageInfo;
 import com.moyunzhijiao.system_app.controller.dto.fonted.ReasonInfo;
 import com.moyunzhijiao.system_app.controller.dto.fonted.user.KlassInfo;
 import com.moyunzhijiao.system_app.controller.dto.fonted.user.RegionInfo;
 import com.moyunzhijiao.system_app.controller.dto.fonted.user.UserInfo;
 import com.moyunzhijiao.system_app.entity.Student;
+import com.moyunzhijiao.system_app.entity.message.Note;
+import com.moyunzhijiao.system_app.entity.message.NoteContent;
+import com.moyunzhijiao.system_app.entity.message.StudentNoteReceive;
+import com.moyunzhijiao.system_app.mapper.message.NoteMapper1;
+import com.moyunzhijiao.system_app.mapper.message.NoteContentMapper;
+import com.moyunzhijiao.system_app.mapper.message.StudentNoteReceiveMapper;
 import com.moyunzhijiao.system_app.mapper.RegionMapper;
 import com.moyunzhijiao.system_app.mapper.UserMapper;
-import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class UserService extends ServiceImpl<UserMapper, Student> {
@@ -20,6 +32,12 @@ public class UserService extends ServiceImpl<UserMapper, Student> {
     UserMapper userMapper;
     @Autowired
     RegionMapper regionMapper;
+    @Autowired
+    NoteMapper1 noteMapper;
+    @Autowired
+    StudentNoteReceiveMapper studentNoteReceiveMapper;
+    @Autowired
+    NoteContentMapper noteContentMapper;
 
     //获取用户信息
     public UserInfo getPersonal(Integer userId) {
@@ -49,8 +67,55 @@ public class UserService extends ServiceImpl<UserMapper, Student> {
 
 
     //获取我的消息
-    public void getMineMessage(Integer userId, Integer messageType, Integer pageNumber) {
+    public List<MessageInfo> getMineMessage(Integer userId, Integer messageType, Integer pageNumber, Integer pageSize) {
+        String type = switch (messageType) {
+            case 0 -> "系统消息";
+            case 1 -> "布置作业";
+            case 2 -> "作业催促";
+            case 3 -> "竞赛消息";
+            default -> "";
+        };
 
+        // 查询学生消息关系表
+        QueryWrapper<StudentNoteReceive> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("student_id", userId);
+        List<StudentNoteReceive> studentNotes = studentNoteReceiveMapper.selectList(queryWrapper);
+
+        List<MessageInfo> messages = new ArrayList<>();
+
+        for (StudentNoteReceive studentNote : studentNotes) {
+            // 查询消息表
+            Note note = noteMapper.selectById(studentNote.getNoteId());
+            // 查询消息内容表
+            NoteContent noteContent = noteContentMapper.selectById(note.getId());
+
+            // 仅添加匹配的消息类型
+            if (note.getType().equals(type)) {
+                // 装配消息信息
+                MessageInfo message = new MessageInfo(
+                        note.getId(),
+                        note.getType(),
+                        note.getName(),
+                        note.getCreatedTime(),
+                        noteContent.getMessage()
+                );
+                messages.add(message);
+            }
+        }
+
+        // 分页处理
+        int start = (pageNumber - 1) * pageSize;
+        int end = Math.min(start + pageSize, messages.size());
+
+        // 检查索引有效性
+        if (start >= messages.size()) {
+            // 如果结果为空或起始索引超出范围，返回空列表
+            return new ArrayList<>();
+        }
+
+        List<MessageInfo> pagedResults = messages.subList(start, end);
+
+        return pagedResults;
     }
 
 

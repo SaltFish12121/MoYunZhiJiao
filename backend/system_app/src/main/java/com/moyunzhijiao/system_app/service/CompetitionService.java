@@ -17,6 +17,7 @@ import com.moyunzhijiao.system_app.mapper.collection.CollectionMapper;
 import com.moyunzhijiao.system_app.mapper.competition.*;
 import com.moyunzhijiao.system_app.mapper.exercise.CharacterAnalysisMapper;
 import com.moyunzhijiao.system_app.mapper.exercise.StrokeAnalysisMapper;
+import com.moyunzhijiao.system_app.utils.SubmitWritingInfoUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class CompetitionService extends ServiceImpl<CompetitionMapper, Competition> {
+    @Autowired
+    private SubmitWritingInfoUtil submitWritingInfoUtil;
+
     @Autowired
     CompetitionMapper competitionMapper;
     @Autowired
@@ -136,7 +140,7 @@ public class CompetitionService extends ServiceImpl<CompetitionMapper, Competiti
         int score = (submission != null && submission.getSystemScore() != null) ? submission.getSystemScore() : 0;
         int rank = (submission != null && submission.getInitialRank() != null) ? submission.getInitialRank() : 0;
 
-        // 获取用户是否收藏
+        // 获取用户是否收藏（不允许收藏）
         boolean ifCollect = false;
 
         // 获取提交信息
@@ -144,8 +148,10 @@ public class CompetitionService extends ServiceImpl<CompetitionMapper, Competiti
                 new QueryWrapper<CompetitionSubmissions>().eq("competition_id", competitionId)
         ).stream().map(content -> {
             // 获取提交图片信息
-            CsubmissionImage image = csubmissionImageMapper.selectById(content.getCompetitionId());
-            if (image == null) {
+            List<CsubmissionImage> images = csubmissionImageMapper.selectList(
+                    new QueryWrapper<CsubmissionImage>().eq("submission_id", content.getCompetitionId())
+            );
+            if (images.isEmpty()) {
                 return null;
             }
 
@@ -173,18 +179,28 @@ public class CompetitionService extends ServiceImpl<CompetitionMapper, Competiti
                 wordInfos.add(wordInfo);
             }
 
-            return new SubmitWritingInfo(
-                    image.getSubmissionId(),
-                    image.getPictureUrl()
-//                wordInfos.toArray(new WordInfo[0][0]) // 假设二维数组的第二维度为 0
+            // 构造 SubmitWritingInfo 对象列表
+            return images.stream().map(image -> submitWritingInfoUtil.createSubmitWritingInfo(image, wordInfos)).collect(Collectors.toList());
+        }).flatMap(List::stream).filter(Objects::nonNull).collect(Collectors.toList());
+
+        // 通过 participant 表找到 DivisionId
+        Integer divisionId = null;
+        if (submission != null) {
+            Participant participant = participantMapper.selectOne(
+                    new QueryWrapper<Participant>().eq("user_id", userId).eq("competition_id", competitionId)
             );
-        }).filter(Objects::nonNull).collect(Collectors.toList());
+            if (participant != null) {
+                divisionId = participant.getDivisionId();
+            }
+        }
+
+        // 获取竞赛需求
+        String requirements = (divisionId != null) ?
+                divisionRequirementsMapper.selectById(divisionId).getRequirements() : "";
 
         // 构建竞赛详细信息对象
         String award = (submission != null) ? submission.getName() : "";
         String comment = (submission != null) ? submission.getSystemEvaluation() : "";
-        String requirements = (submission != null && submission.getDivisionId() != null) ?
-                divisionRequirementsMapper.selectById(submission.getDivisionId()).getRequirements() : "";
 
         CompetitionDetailInfo competitionDetailInfo = new CompetitionDetailInfo(
                 competition.getId(),
@@ -204,8 +220,6 @@ public class CompetitionService extends ServiceImpl<CompetitionMapper, Competiti
 
         return competitionDetailInfo;
     }
-
-
 
 
     // 报名竞赛并存储数据

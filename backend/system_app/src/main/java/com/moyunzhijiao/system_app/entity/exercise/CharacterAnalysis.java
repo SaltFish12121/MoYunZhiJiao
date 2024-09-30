@@ -16,6 +16,9 @@ public class CharacterAnalysis {
     Integer score;
     String evaluation;
     String picture;
-    String created_time;
+    @TableField("created_time")
+    String createdTime;
     String name;
+    @TableField("student_id")
+    String studentId;
 }

@@ -10,4 +10,7 @@ import java.util.List;
 public interface HomeworkSubmissionMapper extends BaseMapper<HomeworkSubmission> {
     @Select("SELECT * FROM homework_submission WHERE student_id = #{studentId} AND homework_id = #{homeworkId}")
     List<HomeworkSubmission> findByStudentIdAndHomeworkId(@Param("studentId") Integer studentId, @Param("homeworkId") Integer homeworkId);
+
+    @Select("SELECT * FROM homework_submission WHERE student_id = #{studentId}")
+    List<HomeworkSubmission> findByStudentId(@Param("studentId") Integer studentId);
 }

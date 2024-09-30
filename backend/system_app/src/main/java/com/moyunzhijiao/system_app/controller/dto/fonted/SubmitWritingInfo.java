@@ -8,10 +8,10 @@ public class SubmitWritingInfo {
     Object submit; //提交的图
     WordInfo[][] word;  //拆出的字
 
-    public SubmitWritingInfo(Integer id, Object submit/*, WordInfo[][] word*/) {
+    public SubmitWritingInfo(Integer id, Object submit, WordInfo[][] word) {
         this.id = id;
         this.submit = submit;
-//        this.word = word;
+        this.word = word;
     }
 
 }

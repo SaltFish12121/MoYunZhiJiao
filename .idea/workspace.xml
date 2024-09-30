@@ -4,31 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ebe2deb6-f11b-4fff-a2ff-5b7cd64d63f1" name="更改" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/2378e72d-3c3f-469d-9eee-d8ac30b37fc2.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/2378e72d-3c3f-469d-9eee-d8ac30b37fc2/storage_v2/_src_/schema/calligraphy_evaluation_system.Cftjow.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/2378e72d-3c3f-469d-9eee-d8ac30b37fc2/storage_v2/_src_/schema/calligraphy_evaluation_system.Cftjow.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/2378e72d-3c3f-469d-9eee-d8ac30b37fc2/storage_v2/_src_/schema/information_schema.FNRwLQ.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/2378e72d-3c3f-469d-9eee-d8ac30b37fc2/storage_v2/_src_/schema/mysql.osA4Bg.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/2378e72d-3c3f-469d-9eee-d8ac30b37fc2/storage_v2/_src_/schema/performance_schema.kIw0nw.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/2378e72d-3c3f-469d-9eee-d8ac30b37fc2/storage_v2/_src_/schema/sys.zb4BAA.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/90360341-d64a-42ff-a558-50138e3df8e1.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/90360341-d64a-42ff-a558-50138e3df8e1/storage_v2/_src_/schema/calligraphy_evaluation_system.Cftjow.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/90360341-d64a-42ff-a558-50138e3df8e1/storage_v2/_src_/schema/calligraphy_evaluation_system.Cftjow.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/90360341-d64a-42ff-a558-50138e3df8e1/storage_v2/_src_/schema/information_schema.FNRwLQ.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/90360341-d64a-42ff-a558-50138e3df8e1/storage_v2/_src_/schema/mysql.osA4Bg.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/90360341-d64a-42ff-a558-50138e3df8e1/storage_v2/_src_/schema/performance_schema.kIw0nw.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/90360341-d64a-42ff-a558-50138e3df8e1/storage_v2/_src_/schema/sys.zb4BAA.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/ed0c0b43-993d-4ea1-87ad-0077b3e9edfe.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/ed0c0b43-993d-4ea1-87ad-0077b3e9edfe/storage_v2/_src_/schema/calligraphy_evaluation_system.Cftjow.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/ed0c0b43-993d-4ea1-87ad-0077b3e9edfe/storage_v2/_src_/schema/calligraphy_evaluation_system.Cftjow.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/ed0c0b43-993d-4ea1-87ad-0077b3e9edfe/storage_v2/_src_/schema/information_schema.FNRwLQ.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/ed0c0b43-993d-4ea1-87ad-0077b3e9edfe/storage_v2/_src_/schema/mysql.osA4Bg.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/ed0c0b43-993d-4ea1-87ad-0077b3e9edfe/storage_v2/_src_/schema/performance_schema.kIw0nw.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/ed0c0b43-993d-4ea1-87ad-0077b3e9edfe/storage_v2/_src_/schema/sys.zb4BAA.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="ebe2deb6-f11b-4fff-a2ff-5b7cd64d63f1" name="更改" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -80,7 +56,7 @@
     "Spring Boot.SystemAppApplication.executor": "Run",
     "git-widget-placeholder": "master",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "D:/Shufapingjiaxit/后台/app/CalligraphyEvaluationSystem/backend/system_app",
+    "last_opened_file_path": "D:/Shufapingjiaxit/后台/app/CalligraphyEvaluationSystem",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -172,6 +148,7 @@
       <workItem from="1724815976247" duration="3000" />
       <workItem from="1724816952418" duration="85000" />
       <workItem from="1724817058017" duration="135000" />
+      <workItem from="1724829985105" duration="803000" />
     </task>
     <servers />
   </component>

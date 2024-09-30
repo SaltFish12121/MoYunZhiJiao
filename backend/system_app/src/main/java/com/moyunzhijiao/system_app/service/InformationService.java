@@ -11,26 +11,22 @@ import com.moyunzhijiao.system_app.controller.dto.fonted.video.VideoListInfo;
 import com.moyunzhijiao.system_app.entity.Agreement;
 import com.moyunzhijiao.system_app.entity.CommonProblem;
 import com.moyunzhijiao.system_app.entity.collection.KnowledgeCollection;
-import com.moyunzhijiao.system_app.entity.competition.Competition;
+import com.moyunzhijiao.system_app.entity.competition.*;
 import com.moyunzhijiao.system_app.entity.knowledge.Knowledge;
 import com.moyunzhijiao.system_app.entity.Video;
 import com.moyunzhijiao.system_app.entity.collection.Collection1;
 import com.moyunzhijiao.system_app.entity.collection.VideoAndCollection;
-import com.moyunzhijiao.system_app.entity.competition.CompetitionRequirements;
-import com.moyunzhijiao.system_app.entity.competition.CompetitionRules;
 import com.moyunzhijiao.system_app.entity.knowledge.KnowledgeContents;
 import com.moyunzhijiao.system_app.mapper.AgreementMapper;
 import com.moyunzhijiao.system_app.mapper.CommonProblemMapper;
 import com.moyunzhijiao.system_app.mapper.collection.KnowledgeCollectionMapper;
 import com.moyunzhijiao.system_app.mapper.collection.VideoCollectionMapper;
-import com.moyunzhijiao.system_app.mapper.competition.CompetitionMapper;
+import com.moyunzhijiao.system_app.mapper.competition.*;
 import com.moyunzhijiao.system_app.mapper.knowledge.KnowledgeContentsMapper;
 import com.moyunzhijiao.system_app.mapper.knowledge.KnowledgeMapper;
 import com.moyunzhijiao.system_app.mapper.VideoMapper;
 import com.moyunzhijiao.system_app.mapper.collection.VideoAndCollectionMapper;
 import com.moyunzhijiao.system_app.mapper.collection.CollectionMapper;
-import com.moyunzhijiao.system_app.mapper.competition.CompetitionRequirementsMapper;
-import com.moyunzhijiao.system_app.mapper.competition.CompetitionRulesMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -397,14 +393,21 @@ public class InformationService{
     }
 
 
+    @Autowired
+    AnnouncementMapper announcementMapper;
+    @Autowired
+    AnnouncementContentMapper announcementContentMapper;
 
     // 获取竞赛通知
     public List<CompetitionInformInfo> getCompetition() {
         // 从数据库中获取所有竞赛展示数据
         List<Competition> competitionList = competitionMapper.selectList(null);
+        List<Announcement> announcementList = announcementMapper.selectList(null);
 
-        // 将 Competition 转换为 CompetitionInformInfo
+        // 将 Competition 和 Announcement 转换为 CompetitionInformInfo
         List<CompetitionInformInfo> competitionInformInfos = new ArrayList<>();
+
+        // 处理 Competition 表中的数据
         for (Competition competition : competitionList) {
             // 从 competition_rules 表中获取规则
             QueryWrapper<CompetitionRules> rulesQueryWrapper = new QueryWrapper<>();
@@ -430,8 +433,34 @@ public class InformationService{
             competitionInformInfos.add(competitionInformInfo);
         }
 
+        // 处理 Announcement 表中的数据
+        for (Announcement announcement : announcementList) {
+            // 检查 type 和 target 字段
+            if ("第三方竞赛公告".equals(announcement.getType()) &&
+                    ("全体".equals(announcement.getTarget()) || "学生".equals(announcement.getTarget()))) {
+
+                // 从 announcement_content 表中获取内容
+                QueryWrapper<AnnouncementContent> contentQueryWrapper = new QueryWrapper<>();
+                contentQueryWrapper.eq("announcement_id", announcement.getId());
+                AnnouncementContent announcementContent = announcementContentMapper.selectOne(contentQueryWrapper);
+                String content = announcementContent != null ? announcementContent.getMessage() : "";
+
+                CompetitionInformInfo competitionInformInfo = new CompetitionInformInfo(
+                        announcement.getId(),
+                        false,
+                        announcement.getName(),
+                        announcement.getCreatedTime(),
+                        announcement.getPictureUrl(),  // 使用公告中的封面数据
+                        content  // 直接使用公告内容
+                );
+                competitionInformInfos.add(competitionInformInfo);
+            }
+        }
+
         return competitionInformInfos;
     }
+
+
 
 
     // 获取单个竞赛的详细信息

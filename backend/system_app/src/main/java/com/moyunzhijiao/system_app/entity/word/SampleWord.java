@@ -1,4 +1,4 @@
-package com.moyunzhijiao.system_app.entity;
+package com.moyunzhijiao.system_app.entity.word;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;

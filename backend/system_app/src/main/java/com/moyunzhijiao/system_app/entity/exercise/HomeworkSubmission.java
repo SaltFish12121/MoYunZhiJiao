@@ -19,7 +19,8 @@ public class HomeworkSubmission {
     Integer teacherScore;
     @TableField("teacher_feedback")
     String teacherFeedback;
-    String submited_time;
+    @TableField("submited_time")
+    String submitedTime;
     @TableField("homework_id")
     Integer homeworkId;
     @TableField("student_id")

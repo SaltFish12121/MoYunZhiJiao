@@ -115,13 +115,13 @@ public class ExerciseController {
 
 
     @Operation(summary = "获取样本字")
-    @GetMapping("/getSampleWord/{pageNum}")
-    public Result getSampleWord(@RequestParam(required = false)String search, @RequestParam(value = "radical", required = false)String radical, @RequestParam(value = "structure", required = false)String structure, @RequestParam(value = "typeface", required = false)String typeface,
+    @GetMapping("/getTemplateWord/{pageNum}")
+    public Result getTemplateWord(@RequestParam(required = false)String search, @RequestParam(value = "radical", required = false)String radical, @RequestParam(value = "structure", required = false)String structure, @RequestParam(value = "typeface", required = false)String typeface,
                                 @PathVariable("pageNum")Integer pageNum){
         System.out.println("样本字"+search+radical+structure+typeface+pageNum);
 
         // 调用 getSampleWord 方法获取样本字列表
-        List<WordListInfo> sampleWords = exerciseService.getSampleWord(search, radical, structure, typeface, pageNum, 20);
+        List<WordListInfo> sampleWords = exerciseService.getTemplateWord(search, radical, structure, typeface, pageNum, 20);
 
         return Result.success(sampleWords);
     }

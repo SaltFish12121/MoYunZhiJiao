@@ -4,11 +4,8 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.moyunzhijiao.system_app.common.Result;
 import com.moyunzhijiao.system_app.controller.dto.*;
-import com.moyunzhijiao.system_app.controller.dto.fonted.FeedbackInfo;
-import com.moyunzhijiao.system_app.controller.dto.fonted.KnowledgeInfo;
-import com.moyunzhijiao.system_app.controller.dto.fonted.ReasonInfo;
+import com.moyunzhijiao.system_app.controller.dto.fonted.*;
 import com.moyunzhijiao.system_app.controller.dto.fonted.video.VideoListInfo;
-import com.moyunzhijiao.system_app.controller.dto.fonted.CollectInfo;
 import com.moyunzhijiao.system_app.controller.dto.fonted.user.UserInfo;
 import com.moyunzhijiao.system_app.service.FeedbackService;
 import com.moyunzhijiao.system_app.service.UserService;
@@ -176,9 +173,9 @@ public class UserController {
         Integer userId = Integer.valueOf(jwt.getAudience().get(0));
         System.out.println("获取我的消息"+userId);
 
-        userService.getMineMessage(userId, messageType, pageNumber);
+        List<MessageInfo> messageInfos = userService.getMineMessage(userId, messageType, pageNumber, 8);
 
-        return Result.success(true);
+        return Result.success(messageInfos);
     }
 
     /**

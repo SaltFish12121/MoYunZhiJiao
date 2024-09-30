@@ -15,10 +15,13 @@ import com.moyunzhijiao.system_app.entity.*;
 import com.moyunzhijiao.system_app.entity.collection.ExerciseCollection;
 import com.moyunzhijiao.system_app.entity.competition.*;
 import com.moyunzhijiao.system_app.entity.exercise.*;
+import com.moyunzhijiao.system_app.entity.word.TemplateWord;
 import com.moyunzhijiao.system_app.mapper.*;
 import com.moyunzhijiao.system_app.mapper.collection.ExerciseCollectionMapper;
 import com.moyunzhijiao.system_app.mapper.competition.*;
 import com.moyunzhijiao.system_app.mapper.exercise.*;
+import com.moyunzhijiao.system_app.mapper.word.TemplateWordMapper;
+import com.moyunzhijiao.system_app.utils.SubmitWritingInfoUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +36,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class ExerciseService {
+    @Autowired
+    SubmitWritingInfoUtil submitWritingInfoUtil;
+
     @Autowired
     private HomeworkMapper homeworkMapper;
     @Autowired
@@ -53,8 +59,6 @@ public class ExerciseService {
     FontMapper fontMapper;
     @Autowired
     HsubmissionImageMapper hsubmissionImageMapper;
-    @Autowired
-    SampleWordMapper sampleWordMapper;
     @Autowired
     RadicalMapper radicalMapper;
     @Autowired
@@ -305,29 +309,31 @@ public class ExerciseService {
         return templateInfos.subList(start, end);
     }
 
+    @Autowired
+    TemplateWordMapper templateWordMapper;
 
     // 获取样本字
-    public List<WordListInfo> getSampleWord(String search, String radical, String structure, String typeface, Integer pageNumber, Integer pageSize) {
+    public List<WordListInfo> getTemplateWord(String search, String radical, String structure, String typeface, Integer pageNumber, Integer pageSize) {
         // 创建查询条件
-        QueryWrapper<SampleWord> queryWrapper = new QueryWrapper<>();
+        QueryWrapper<TemplateWord> queryWrapper = new QueryWrapper<>();
         if (search != null && !search.isEmpty()) {
             queryWrapper.like("name", search);
         }
 
         // 从 sample_word 表中获取符合条件的样本字
-        List<SampleWord> sampleWords = sampleWordMapper.selectList(queryWrapper);
+        List<TemplateWord> templateWords = templateWordMapper.selectList(queryWrapper);
 
         // 将 SampleWord 转换为 WordListInfo，并进行名称匹配
-        List<WordListInfo> wordListInfos = sampleWords.stream()
-                .map(sampleWord -> {
-                    Radical radicalEntity = radicalMapper.selectById(sampleWord.getRadicalId());
-                    Structure structureEntity = structureMapper.selectById(sampleWord.getStructureId());
+        List<WordListInfo> wordListInfos = templateWords.stream()
+                .map(templateWord -> {
+                    Radical radicalEntity = radicalMapper.selectById(templateWord.getRadicalId());
+                    Structure structureEntity = structureMapper.selectById(templateWord.getStructureId());
                     String radicalName = radicalEntity != null ? radicalEntity.getName() : null;
                     String structureName = structureEntity != null ? structureEntity.getName() : null;
 
                     if ((radical == null || radical.isEmpty() || radical.equals(radicalName)) &&
                             (structure == null || structure.isEmpty() || structure.equals(structureName))) {
-                        return new WordListInfo(sampleWord.getId(), sampleWord.getContent());
+                        return new WordListInfo(templateWord.getId(), templateWord.getContent(), templateWord.getName());
                     }
                     return null;
                 })
@@ -351,19 +357,19 @@ public class ExerciseService {
     // 获取所选单字
     public WordListInfo getSelectWord(Integer sampleWordId) {
         // 通过 SampleWord 的 Id 查找对应的样本字
-        SampleWord sampleWord = sampleWordMapper.selectById(sampleWordId);
-        if (sampleWord == null) {
+        TemplateWord templateWord = templateWordMapper.selectById(sampleWordId);
+        if (templateWord == null) {
             return null; // 如果找不到对应的样本字，返回 null
         }
 
         // 查找对应的偏旁和结构名称
-        Radical radicalEntity = radicalMapper.selectById(sampleWord.getRadicalId());
-        Structure structureEntity = structureMapper.selectById(sampleWord.getStructureId());
+        Radical radicalEntity = radicalMapper.selectById(templateWord.getRadicalId());
+        Structure structureEntity = structureMapper.selectById(templateWord.getStructureId());
         String radicalName = radicalEntity != null ? radicalEntity.getName() : null;
         String structureName = structureEntity != null ? structureEntity.getName() : null;
 
         // 创建并返回 WordListInfo 对象
-        return new WordListInfo(sampleWord.getId(), sampleWord.getContent()/*, radicalName, structureName*/);
+        return new WordListInfo(templateWord.getId(), templateWord.getContent(), templateWord.getName()/*, radicalName, structureName*/);
     }
 
 
@@ -401,44 +407,41 @@ public class ExerciseService {
             strokeQueryWrapper.eq("character_analysis_id", character.getId());
             List<StrokeAnalysis> strokes = strokeAnalysisMapper.selectList(strokeQueryWrapper);
 
+            // 根据 character.getName() 从 template_word 表中查找对应的模板字
+            QueryWrapper<TemplateWord> templateQueryWrapper = new QueryWrapper<>();
+            templateQueryWrapper.eq("name", character.getName());
+            TemplateWord templateWord = templateWordMapper.selectOne(templateQueryWrapper);
+
+            // 获取模板字的图片 URL
+            String templateWordContent = (templateWord != null) ? templateWord.getContent() : "default_template_word_url";
+
             // 构造 WordInfo 对象
             WordInfo wordInfo = new WordInfo(
                     character.getPicture(),
                     strokes.stream().map(StrokeAnalysis::getPicture).collect(Collectors.toList()),
                     character.getScore(),
-                    character.getName(),
+                    templateWordContent, // 使用模板字的图片 URL
                     character.getEvaluation()
             );
             wordInfos.add(wordInfo);
         }
 
-        // 5. 获取提交图片信息并检查是否为 null
-        HsubmissionImage hsubmissionImage = hsubmissionImageMapper.selectById(submission.getId());
-        String pictureUrl = (hsubmissionImage != null) ? hsubmissionImage.getPictureUrl() : "https://dummyimage.com/120x240";
+        // 5. 构造 SubmitWritingInfo 对象
+        SubmitWritingInfo submitWritingInfo = submitWritingInfoUtil.createSubmitWritingInfo(submission, wordInfos);
 
-        // 6. 构造 SubmitWritingInfo 对象
-        SubmitWritingInfo submitWritingInfo = new SubmitWritingInfo(
-                submission.getId(),
-                pictureUrl
-//                wordInfos.toArray(new WordInfo[0][0]) // 假设二维数组的第二维度为 0
-        );
-
-        // 7. 构造 SchoolFinishExerciseDetailInfo 对象
+        // 6. 构造 SchoolFinishExerciseDetailInfo 对象
         SchoolFinishExerciseDetailInfo detailInfo = new SchoolFinishExerciseDetailInfo(
                 homework.getId(),
                 homework.getName(),
                 homework.getTarget(), // 类型
                 ifCollect, // 假设没有收藏功能
-
                 homework.getDifficulty(),
                 homework.getWordCount(),
                 fontMapper.selectById(homework.getFontId()).getName(), // 从 font 表中获取字体信息
                 homework.getType() + homework.getDetailType(), // 假设 type=0 为练习，其他为作业
-
                 homework.getRequirements(),
                 homeworkImageMapper.selectById(homework.getId()).getPictureUrl(), // 从 homeworkImage 表中获取样例图
                 Arrays.asList(submitWritingInfo), // 获取 SubmitWritingInfo 列表并填充
-
                 submission.getSystemScore(),
                 submission.getSystemFeedback(),
                 submission.getTeacherFeedback()
@@ -565,11 +568,7 @@ public class ExerciseService {
         }
 
         // 5. 构造 SubmitWritingInfo 对象
-        SubmitWritingInfo submitWritingInfo = new SubmitWritingInfo(
-                submission.getId(),
-                hsubmissionImageMapper.selectById(submission.getId()).getPictureUrl()
-//                wordInfos.toArray(new WordInfo[0][0]) // 假设二维数组的第二维度为 0
-        );
+        SubmitWritingInfo submitWritingInfo = submitWritingInfoUtil.createSubmitWritingInfo(submission, wordInfos);
 
         // 6. 构造 SelfFinishExerciseDetailInfo 对象
         SelfFinishExerciseDetailInfo detailInfo = new SelfFinishExerciseDetailInfo(
@@ -585,7 +584,6 @@ public class ExerciseService {
 
         return detailInfo;
     }
-
 
 
     // 获取自我未完成详情
@@ -649,12 +647,12 @@ public class ExerciseService {
                 String teacherComment = (homeworkSubmission != null) ? homeworkSubmission.getTeacherFeedback() : "";
 
                 // 检查 homework.getDifficulty() 和 homework.getWordCount() 是否为 null
-                Integer difficulty = (homework.getDifficulty() != null) ? homework.getDifficulty() : 0; // 提供默认值 0
-                Integer wordCount = (homework.getWordCount() != null) ? homework.getWordCount() : 0; // 提供默认值 0
+                int difficulty = (homework.getDifficulty() != null) ? homework.getDifficulty() : 0; // 提供默认值 0
+                int wordCount = (homework.getWordCount() != null) ? homework.getWordCount() : 0; // 提供默认值 0
                 String type = (homework.getType() != null) ? homework.getType() : ""; // 提供默认值 ""
                 String requirements = (homework.getRequirements() != null) ? homework.getRequirements() : ""; // 提供默认值 ""
 
-                Boolean ifCollect = isExerciseCollected(userId, exerciseId, "优秀学校作品");
+                boolean ifCollect = isExerciseCollected(userId, exerciseId, "优秀学校作品");
 
                 // 获取 CharacterAnalysis 列表
                 QueryWrapper<CharacterAnalysis> characterQueryWrapper = new QueryWrapper<>();
@@ -681,11 +679,7 @@ public class ExerciseService {
                 }
 
                 // 构造 SubmitWritingInfo 对象
-                SubmitWritingInfo submitWritingInfo = new SubmitWritingInfo(
-                        homeworkSubmission.getId(),
-                        hsubmissionImageMapper.selectById(homeworkSubmission.getId()).getPictureUrl()
-//                        wordInfos.toArray(new WordInfo[0][0]) // 假设二维数组的第二维度为 0
-                );
+                SubmitWritingInfo submitWritingInfo = submitWritingInfoUtil.createSubmitWritingInfo(homeworkSubmission, wordInfos);
 
                 return new ExcellentHomeworkInfo(
                         excellentHomework.getSubmissionsId(),
@@ -705,7 +699,7 @@ public class ExerciseService {
                 );
             }
         }
-        return null;  // 如果未找到对应的作业，返回 null
+        return null; // 作业未找到或未完成
     }
 
 
@@ -721,13 +715,15 @@ public class ExerciseService {
             ).stream().map(content -> {
                 // 获取提交图片信息
                 System.out.println("getCompetitionId " + content.getCompetitionId());
-                CsubmissionImage image = csubmissionImageMapper.selectById(content.getCompetitionId());
-                if (image == null) {
+                List<CsubmissionImage> images = csubmissionImageMapper.selectList(
+                        new QueryWrapper<CsubmissionImage>().eq("submission_id", content.getCompetitionId())
+                );
+                if (images.isEmpty()) {
                     // 处理空值情况
                     System.out.println("image 空值");
                     return null;
                 }
-                System.out.println("image find");
+                System.out.println("images find");
 
                 // 获取 CharacterAnalysis 列表
                 QueryWrapper<CharacterAnalysis> characterQueryWrapper = new QueryWrapper<>();
@@ -753,17 +749,16 @@ public class ExerciseService {
                     wordInfos.add(wordInfo);
                 }
 
+                // 构造 SubmitWritingInfo 对象列表
+                List<SubmitWritingInfo> submitWritingInfos = images.stream().map(image -> submitWritingInfoUtil.createSubmitWritingInfo(image, wordInfos)).collect(Collectors.toList());
+
                 return new CompetitionContentInfo(
                         content.getCompetitionId(),
                         content.getAverageFinalScore() != null ? content.getAverageFinalScore() : 0,
                         content.getInitialRank() != null ? content.getInitialRank() : 0,
                         content.getInitialEvaluation() != null ? content.getInitialEvaluation() : "",
                         content.getSystemEvaluation() != null ? content.getSystemEvaluation() : "",
-                        Arrays.asList(new SubmitWritingInfo(
-                                image.getSubmissionId(),
-                                image.getPictureUrl()
-//                                wordInfos.toArray(new WordInfo[0][0]) // 假设二维数组的第二维度为 0
-                        ))
+                        submitWritingInfos
                 );
             }).filter(Objects::nonNull).collect(Collectors.toList());
 
@@ -779,7 +774,6 @@ public class ExerciseService {
         }
         return null;  // 如果未找到对应的竞赛，返回 null
     }
-
 
 
     // 上传练习
@@ -857,7 +851,7 @@ public class ExerciseService {
             homeworkSubmission.setSystemFeedback(null);
             homeworkSubmission.setTeacherScore(null);
             homeworkSubmission.setTeacherFeedback(null);
-            homeworkSubmission.setSubmited_time(null);
+            homeworkSubmission.setSubmitedTime(null);
             homeworkSubmission.setState(0);
             homeworkSubmission.setReviewed(0);
             homeworkSubmissionMapper.insert(homeworkSubmission);
@@ -873,6 +867,7 @@ public class ExerciseService {
     public String generateExercise(WordListInfo[] wordListInfos) {
         return "https://dummyimage.com/120x120";
     }
+
 
 
     // 生成练习综合
